@@ -1,6 +1,7 @@
 require 'guard'
 require 'guard/guard'
 require 'pusher'
+require 'erb'
 
 module Guard
   class Pusher < Guard
@@ -24,7 +25,7 @@ module Guard
       @options = options
 
       config = if File.file?('config/pusher.yml')
-        YAML.load_file('config/pusher.yml')['development']
+        YAML.load(ERB.new(File.read('config/pusher.yml')).result)['development']
       else
         options
       end
@@ -37,7 +38,7 @@ module Guard
     end
 
     def run_on_change(paths)
-      ::Pusher['guard-pusher'].trigger(@options[:event] || 'guard', {})
+      ::Pusher['guard-pusher'].trigger(@options[:event] || 'guard', { :paths => paths })
     end
 
   end

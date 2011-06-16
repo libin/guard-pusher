@@ -11,19 +11,14 @@ describe Guard::Pusher do
       }
     }
 
-    File.should_receive(:file?).
-      with('config/pusher.yml').
-      and_return(true)
-
-    YAML.should_receive(:load_file).
-      with('config/pusher.yml').
-      and_return(config)
+    File.should_receive(:file?).with('config/pusher.yml').and_return(true)
+    File.should_receive(:read).with('config/pusher.yml')
+    ERB.should_receive(:new).and_return(double('erb', :result => 'erb_foo'))
+    YAML.should_receive(:load).with('erb_foo').and_return(config)
   end
 
   def without_yaml
-    File.should_receive(:file?).
-      with('config/pusher.yml').
-      and_return(false)
+    File.should_receive(:file?).with('config/pusher.yml').and_return(false)
   end
 
   describe "configuration" do
@@ -94,7 +89,7 @@ describe Guard::Pusher do
     it ":event" do
       channel = mock(Pusher::Channel)
       Pusher.stub(:[]).and_return(channel)
-      channel.should_receive(:trigger).with('custom', {})
+      channel.should_receive(:trigger).with('custom', { :paths => ['foo'] })
       Guard::Pusher.new([], { :event => 'custom' }).run_on_change(['foo'])
     end
   end
@@ -103,7 +98,7 @@ describe Guard::Pusher do
     it "sends Pusher message" do
       channel = mock(Pusher::Channel)
       Pusher.should_receive(:[]).with('guard-pusher').twice.and_return(channel)
-      channel.should_receive(:trigger).with('guard', {})
+      channel.should_receive(:trigger).with('guard', { :paths => ['foo'] })
       subject.run_on_change(['foo'])
     end
   end
