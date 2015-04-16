@@ -1,10 +1,10 @@
 require 'guard'
-require 'guard/guard'
+require 'guard/plugin'
 require 'pusher'
 require 'erb'
 
 module Guard
-  class Pusher < Guard
+  class Pusher < Plugin
 
     def self.configure(options)
       %w{app_id key secret}.inject(Hash.new) { |hash, key|
@@ -19,7 +19,7 @@ module Guard
       rescue ::Pusher::ConfigurationError
     end
 
-    def initialize(watchers = [], options = {})
+    def initialize(options = {})
       super
 
       @options = options
